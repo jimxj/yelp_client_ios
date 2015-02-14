@@ -14,6 +14,7 @@
 
 @property (weak, nonatomic) IBOutlet UISwitch *toggleSwitch;
 
+
 @end
 
 @implementation YPSwitchCell

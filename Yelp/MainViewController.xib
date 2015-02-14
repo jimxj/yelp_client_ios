@@ -16,12 +16,18 @@
             <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="IhF-F7-9Uc">
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="IhF-F7-9Uc">
                     <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </tableView>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="IhF-F7-9Uc" secondAttribute="bottom" id="8Oy-Dq-UmQ"/>
+                <constraint firstItem="IhF-F7-9Uc" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="sDQ-iR-MNX"/>
+                <constraint firstItem="IhF-F7-9Uc" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="xv5-BB-gvF"/>
+                <constraint firstAttribute="trailing" secondItem="IhF-F7-9Uc" secondAttribute="trailing" id="zic-bU-b2V"/>
+            </constraints>
         </view>
     </objects>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

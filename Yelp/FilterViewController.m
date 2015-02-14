@@ -82,7 +82,7 @@ static NSString * const kCellName = @"YPSwitchCell";
             [names addObject:category[@"code"]];
         }
         NSString *categoryFilter = [names componentsJoinedByString:@","];
-        [filters setObject:categoryFilter forKey:@"cagegory_filter"];
+        [filters setObject:categoryFilter forKey:@"category_filter"];
     }
     
     return filters;

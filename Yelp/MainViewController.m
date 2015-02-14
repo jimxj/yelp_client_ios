@@ -57,6 +57,8 @@ static NSString * const kCellName = @"YelpRestaurantCell";
     self.title = @"Yelp";
     
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Filter" style:UIBarButtonItemStylePlain target:self action:@selector(onFilterButton)];
+
+    //self.navigationItem.titleView = [[UISearchBar alloc] init];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {

@@ -20,7 +20,11 @@
         _retingImageUrl = dictionary[@"rating_img_url"];
         static float milesPerMeter = 0.000621371;
         _distance = [dictionary[@"distance"] integerValue] * milesPerMeter;
-        _address = [NSString stringWithFormat:@"%@, %@", [dictionary valueForKeyPath:@"location.address"][0], [dictionary valueForKeyPath:@"location.neighborhoods"][0]];
+        NSString *street;
+        if([dictionary valueForKeyPath:@"location.address"] && [[dictionary valueForKeyPath:@"location.address"] count] > 0) {
+            street = [dictionary valueForKeyPath:@"location.address"][0];
+        }
+        _address = [NSString stringWithFormat:@"%@, %@", street, [dictionary valueForKeyPath:@"location.neighborhoods"][0]];
         
         NSArray *categories = dictionary[@"categories"];
         NSMutableArray *categoryNames = [NSMutableArray array];

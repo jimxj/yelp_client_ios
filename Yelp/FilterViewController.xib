@@ -16,12 +16,18 @@
             <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="V28-Cm-Mre">
-                    <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="V28-Cm-Mre">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </tableView>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="V28-Cm-Mre" secondAttribute="bottom" id="0Z3-bT-gbF"/>
+                <constraint firstAttribute="trailing" secondItem="V28-Cm-Mre" secondAttribute="trailing" id="h6z-Al-x4c"/>
+                <constraint firstItem="V28-Cm-Mre" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="okm-AX-i1D"/>
+                <constraint firstItem="V28-Cm-Mre" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="unT-TU-48X"/>
+            </constraints>
             <point key="canvasLocation" x="322" y="238"/>
         </view>
     </objects>
