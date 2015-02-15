@@ -165,7 +165,7 @@ double const METERS_PER_MILE= 1609.344;
         self.isInSearchMode = NO;
     } else {
         self.isInSearchMode = YES;
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name BEGINSWITH[c] %@",searchText];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF.name CONTAINS[c] %@",searchText];
         self.searchResultBusinesses = [NSMutableArray arrayWithArray:[self.businesses filteredArrayUsingPredicate:predicate]];
     }
     
