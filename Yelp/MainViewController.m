@@ -12,6 +12,7 @@
 #import "YelpRestaurantCell.h"
 #import "FilterViewController.h"
 #import "SVProgressHUD.h"
+#import <MapKit/MapKit.h>
 
 NSString * const kYelpConsumerKey = @"vxKwwcR_NMQ7WaEiQBK_CA";
 NSString * const kYelpConsumerSecret = @"33QCvh5bIF5jIHR5klQr7RtBDhQ";
@@ -19,6 +20,8 @@ NSString * const kYelpToken = @"uRcRswHFYa1VkDrGV6LAW2F8clGh5JHV";
 NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 
 static NSString * const kCellName = @"YelpRestaurantCell";
+
+double const METERS_PER_MILE= 1609.344;
 
 @interface MainViewController () <UITableViewDataSource, UITableViewDelegate, YPFilterDelegate, UISearchBarDelegate, UISearchDisplayDelegate>
 
@@ -28,7 +31,12 @@ static NSString * const kCellName = @"YelpRestaurantCell";
 @property (nonatomic, assign) BOOL isInSearchMode;
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+
+@property (weak, nonatomic) IBOutlet MKMapView *mapView;
+
+
 @property (nonatomic, strong) UISearchBar *searchBar;
+@property (nonatomic, strong) UIBarButtonItem* rightUIBarButton;
 
 -(void) fetchBusinessesWithQuery:(NSString *) query params:(NSDictionary *) params;
 
@@ -49,6 +57,7 @@ static NSString * const kCellName = @"YelpRestaurantCell";
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
     
+    // set uptable view
     [self.tableView registerNib:[UINib nibWithNibName:kCellName bundle:nil] forCellReuseIdentifier:kCellName];
     
     self.tableView.delegate = self;
@@ -57,13 +66,24 @@ static NSString * const kCellName = @"YelpRestaurantCell";
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 85;
     
+    // set up map view
+    CLLocationCoordinate2D zoomLocation;
+    zoomLocation.latitude = 37.774866;
+    zoomLocation.longitude= -122.394556;
+    MKCoordinateRegion viewRegion = MKCoordinateRegionMakeWithDistance(zoomLocation, 5*METERS_PER_MILE, 5*METERS_PER_MILE);
+    [self.mapView setRegion:viewRegion animated:YES];
+    self.mapView.hidden = YES;
+    self.mapView.showsUserLocation = YES;
+    
     self.title = @"Yelp";
     
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Filter" style:UIBarButtonItemStylePlain target:self action:@selector(onFilterButton)];
     
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Map View" style:UIBarButtonItemStylePlain target:self action:@selector(onSwitchViewButton)];
+    self.rightUIBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Map View" style:UIBarButtonItemStylePlain target:self action:@selector(onSwitchViewButton)];
+    self.navigationItem.rightBarButtonItem = self.rightUIBarButton;
 
-    self.searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width/2, 30)];
+    self.searchBar = [[UISearchBar alloc] init];//[[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width/2, 30)];
+    self.searchBar.prompt = @"Business Name";
     self.searchBar.delegate = self;
     self.navigationItem.titleView = self.searchBar;
 //    UIView *titleView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width/2, 30)];
@@ -79,12 +99,12 @@ static NSString * const kCellName = @"YelpRestaurantCell";
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.isInSearchMode ? self.searchResultBusinesses.count : self.businesses.count;
+    return [self businessesToDisplay].count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     YelpRestaurantCell *cell = [self.tableView dequeueReusableCellWithIdentifier:kCellName];
-    cell.business = self.isInSearchMode ? self.searchResultBusinesses[indexPath.row] : self.businesses[indexPath.row];
+    cell.business = [self businessesToDisplay][indexPath.row];
     return cell;
 }
 
@@ -118,7 +138,17 @@ static NSString * const kCellName = @"YelpRestaurantCell";
 }
 
 -(void) onSwitchViewButton {
+    if(!self.tableView.hidden) {
+        self.mapView.hidden = NO;
+        self.tableView.hidden = YES;
+        [self.rightUIBarButton setTitle:@"List View"];
+    } else {
+        self.mapView.hidden = YES;
+        self.tableView.hidden = NO;
+        [self.rightUIBarButton setTitle:@"Map View"];
+    }
     
+    [self reloadViewData];
 }
 
 #pragma mark - filter delegate
@@ -139,7 +169,7 @@ static NSString * const kCellName = @"YelpRestaurantCell";
         self.searchResultBusinesses = [NSMutableArray arrayWithArray:[self.businesses filteredArrayUsingPredicate:predicate]];
     }
     
-    [self.tableView reloadData];
+    [self reloadViewData];
 }
 
 
@@ -152,6 +182,24 @@ static NSString * const kCellName = @"YelpRestaurantCell";
     
     // To dismiss keyboard
     [self.searchBar resignFirstResponder];
+}
+
+-(NSArray *) businessesToDisplay {
+    return self.isInSearchMode ? self.searchResultBusinesses : self.businesses;
+}
+
+-(void) reloadMapData {
+    NSArray *oldAnnotations = self.mapView.annotations;
+    [self.mapView removeAnnotations: oldAnnotations];
+    [self.mapView showAnnotations:[self businessesToDisplay] animated:YES];
+}
+
+-(void) reloadViewData {
+    if(!self.tableView.hidden) {
+       [self.tableView reloadData];
+    } else {
+       [self reloadMapData];
+    }
 }
 
 @end

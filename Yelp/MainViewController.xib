@@ -7,6 +7,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="MainViewController">
             <connections>
+                <outlet property="mapView" destination="cXK-kT-Hrt" id="ak3-RJ-Rrz"/>
                 <outlet property="tableView" destination="IhF-F7-9Uc" id="QYK-dO-nAW"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
@@ -20,11 +21,18 @@
                     <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </tableView>
+                <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="cXK-kT-Hrt">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                </mapView>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
             <constraints>
+                <constraint firstItem="cXK-kT-Hrt" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="7WH-pP-Iio"/>
                 <constraint firstAttribute="bottom" secondItem="IhF-F7-9Uc" secondAttribute="bottom" id="8Oy-Dq-UmQ"/>
+                <constraint firstAttribute="trailing" secondItem="cXK-kT-Hrt" secondAttribute="trailing" id="FFD-Dw-ko2"/>
+                <constraint firstItem="cXK-kT-Hrt" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="OXW-fI-uvN"/>
                 <constraint firstItem="IhF-F7-9Uc" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="sDQ-iR-MNX"/>
+                <constraint firstAttribute="bottom" secondItem="cXK-kT-Hrt" secondAttribute="bottom" id="xNz-Wk-6jz"/>
                 <constraint firstItem="IhF-F7-9Uc" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="xv5-BB-gvF"/>
                 <constraint firstAttribute="trailing" secondItem="IhF-F7-9Uc" secondAttribute="trailing" id="zic-bU-b2V"/>
             </constraints>

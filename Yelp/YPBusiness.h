@@ -7,8 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <MapKit/MapKit.h>
 
-@interface YPBusiness : NSObject
+@interface YPBusiness : NSObject<MKAnnotation>
 
 @property (nonatomic, strong) NSString *imageUrl;
 @property (nonatomic, strong) NSString *name;
@@ -17,6 +18,7 @@
 @property (nonatomic, strong) NSString *address;
 @property (nonatomic, strong) NSString *categories;
 @property (nonatomic, assign) CGFloat distance;
+@property (nonatomic, assign) CLLocationCoordinate2D coordinate;
 
 +(NSArray *)businessesWithDictionaries:(NSArray *) dictionaries;
 

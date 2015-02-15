@@ -26,6 +26,9 @@
         }
         _address = [NSString stringWithFormat:@"%@, %@", street, [dictionary valueForKeyPath:@"location.neighborhoods"][0]];
         
+        _coordinate.latitude = [[dictionary valueForKeyPath:@"location.coordinate.latitude"] doubleValue];
+        _coordinate.longitude = [[dictionary valueForKeyPath:@"location.coordinate.longitude"] doubleValue];
+        
         NSArray *categories = dictionary[@"categories"];
         NSMutableArray *categoryNames = [NSMutableArray array];
         [categories enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -48,6 +51,19 @@
 
 -(NSString *) description {
     return [NSString stringWithFormat:@"%@, %@, %@", self.name, self.address, self.categories];
+}
+
+#pragma mark - MKAnnotation protocol
+- (NSString *)title {
+    return _name;
+}
+
+- (NSString *)subtitle {
+    return _address;
+}
+
+- (CLLocationCoordinate2D)coordinate {
+    return _coordinate;
 }
 
 @end
