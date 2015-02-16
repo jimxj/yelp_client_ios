@@ -48,6 +48,8 @@ double const METERS_PER_MILE= 1609.344;
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if(self) {
+        // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
+        self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
     }
     return self;
 }
@@ -110,9 +112,6 @@ double const METERS_PER_MILE= 1609.344;
 
 -(void) fetchBusinessesWithQuery:(NSString *) query params:(NSDictionary *) params {
     [SVProgressHUD show];
-
-    // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
-    self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
     
     [self.client searchWithTerm:query params:params success:^(AFHTTPRequestOperation *operation, id response) {
         NSLog(@"response: %@", response);

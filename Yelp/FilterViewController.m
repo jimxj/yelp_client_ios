@@ -36,6 +36,7 @@ static NSString * const kSortFilterName = @"sort";
 
 @property (nonatomic, assign) NSInteger selectedDistanceFilter;
 @property (nonatomic, assign) NSInteger selectedSortFilter;
+@property (nonatomic, assign) BOOL isOfferingDealSelected;
 
 -(void) initCategories;
 
@@ -54,10 +55,10 @@ static NSString * const kSortFilterName = @"sort";
 
         _selectedCategories = [NSMutableSet set];
 
-        _selectedDistanceFilter = -1;
-        _selectedSortFilter = -1;
+        _selectedDistanceFilter = 0;
+        _selectedSortFilter = 0;
         
-        _sectionCells = @[kPriceCellName, kCategoryCellName, kPickerCellName, kPickerCellName, kCategoryCellName, kCategoryCellName];
+        _sectionCells = @[kPriceCellName, kCategoryCellName, kCategoryCellName, kCategoryCellName, kCategoryCellName, kCategoryCellName];
     }
     
     return self;
@@ -92,9 +93,9 @@ static NSString * const kSortFilterName = @"sort";
         case 1: //most popular
             return 4;
         case 2: //distance
-            return 1;
+            return self.distanceFilters.count;
         case 3: //sort by
-            return 1;
+            return self.sortFilters.count;
         case 4: //general features
             return 3;
         case 5: //category
@@ -136,15 +137,23 @@ static NSString * const kSortFilterName = @"sort";
             break;
         }
         case 2: {//distance
-            YPPicckerCell *pickerCell = (YPPicckerCell *) cell;
-            pickerCell.typeName = @"radius_filter";
-            pickerCell.pickerDataList = self.distanceFilters;
+//            YPPicckerCell *pickerCell = (YPPicckerCell *) cell;
+//            pickerCell.typeName = @"radius_filter";
+//            pickerCell.pickerDataList = self.distanceFilters;
+            YPSwitchCell *ypSwitchCell = (YPSwitchCell *) cell;
+            ypSwitchCell.delegate = self;
+            ypSwitchCell.on = self.selectedDistanceFilter == indexPath.row;
+            ypSwitchCell.title = self.distanceFilters[indexPath.row][@"name"];
             break;
         }
         case 3: {//sort by
-            YPPicckerCell *pickerCell = (YPPicckerCell *) cell;
-            pickerCell.typeName = @"sort";
-            pickerCell.pickerDataList = self.sortFilters;
+//            YPPicckerCell *pickerCell = (YPPicckerCell *) cell;
+//            pickerCell.typeName = @"sort";
+//            pickerCell.pickerDataList = self.sortFilters;
+            YPSwitchCell *ypSwitchCell = (YPSwitchCell *) cell;
+            ypSwitchCell.delegate = self;
+            ypSwitchCell.on = self.selectedSortFilter == indexPath.row;
+            ypSwitchCell.title = self.sortFilters[indexPath.row][@"name"];
             break;
         }
         case 4: //general features
@@ -166,10 +175,37 @@ static NSString * const kSortFilterName = @"sort";
 
 - (void)switchCell:(YPSwitchCell *)switchCell didUpdateValue:(BOOL)value {
     NSIndexPath *indexPath = [self.tableView indexPathForCell:switchCell];
-    if(value) {
-        [self.selectedCategories addObject:self.categories[indexPath.row]];
+    switch (indexPath.section) {
+        case 0: //price
+            return;
+        case 1: {//most popular
+            if(indexPath.row == 2) {
+                self.isOfferingDealSelected = value;
+            }
+            return ;
+        }
+        case 2: {//distance
+            NSIndexPath *previousIndexPath = [NSIndexPath indexPathForRow:self.selectedDistanceFilter inSection:indexPath.section];
+            self.selectedDistanceFilter = indexPath.row;
+            [self.tableView reloadRowsAtIndexPaths:@[previousIndexPath] withRowAnimation:UITableViewRowAnimationNone];
+            return;
+        }
+        case 3: {//sort by
+            NSIndexPath *previousIndexPath = [NSIndexPath indexPathForRow:self.selectedDistanceFilter inSection:indexPath.section];
+            self.selectedSortFilter = indexPath.row;
+            [self.tableView reloadRowsAtIndexPaths:@[previousIndexPath] withRowAnimation:UITableViewRowAnimationNone];
+            return;
+        }
+        case 4: //general features
+            return ;
+        case 5: { //category
+            if (value) {
+                [self.selectedCategories addObject:self.categories[indexPath.row]];
+            }
+        }
+        default:
+            return ;
     }
-
 }
 
 -(NSDictionary *) fiters {
@@ -183,6 +219,14 @@ static NSString * const kSortFilterName = @"sort";
         NSString *categoryFilter = [names componentsJoinedByString:@","];
         [filters setObject:categoryFilter forKey:@"category_filter"];
     }
+    
+        if(self.isOfferingDealSelected) {
+            [filters setObject:@YES forKey:@"deals_filter"];
+        }
+        
+        [filters setObject:[NSNumber numberWithDouble:[self.distanceFilters[self.selectedDistanceFilter][@"code"] doubleValue]] forKey:@"radius_filter"];
+        [filters setObject:[NSNumber numberWithInt:[self.sortFilters[self.selectedSortFilter][@"code"] intValue]] forKey:@"sort"];
+
     
     return filters;
 }
@@ -226,10 +270,11 @@ static NSString * const kSortFilterName = @"sort";
 }
 
 -(void) initDistanceFilters {
-    _distanceFilters = @[@{@"name" : @"Auto", @"code": @"5" },
+    _distanceFilters = @[@{@"name" : @"Best matched", @"code": @"40000" },
+                        @{@"name" : @"0.3 miles", @"code": @"482.8" },
                         @{@"name" : @"1 mile", @"code": @"1609" },
                         @{@"name" : @"5 miles", @"code": @"8046" },
-                        @{@"name" : @"15 miles", @"code": @"24140" }
+                        @{@"name" : @"20 miles", @"code": @"32186.9" }
                         ];
 }
 
