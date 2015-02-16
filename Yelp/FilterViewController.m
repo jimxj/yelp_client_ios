@@ -8,18 +8,34 @@
 
 #import "FilterViewController.h"
 #import "YPSwitchCell.h"
+#import "YPPriceCell.h"
+#import "YPPicckerCell.h"
+#import "YPListSelectDelegate.h"
 
-static NSString * const kCellName = @"YPSwitchCell";
+static NSString * const kCategoryCellName = @"YPSwitchCell";
+static NSString * const kPriceCellName = @"YPPriceCell";
+static NSString * const kPickerCellName = @"YPPicckerCell";
 
-@interface FilterViewController () <UITableViewDataSource, UITableViewDelegate, YPSwitchCellDelegate>
+static NSString * const kDistanceFilterName = @"radius_filter";
+static NSString * const kSortFilterName = @"sort";
+
+@interface FilterViewController () <UITableViewDataSource, UITableViewDelegate, YPSwitchCellDelegate, YPListSelectDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 
 @property (nonatomic, strong) NSDictionary *fiters;
 
+@property (nonatomic, strong) NSArray *popularFilters;
+@property (nonatomic, strong) NSArray *distanceFilters;
+@property (nonatomic, strong) NSArray *sortFilters;
 @property (nonatomic, strong) NSArray *categories;
 
 @property (nonatomic, strong) NSMutableSet *selectedCategories;
+
+@property (nonatomic, strong, readonly) NSArray *sectionCells;
+
+@property (nonatomic, assign) NSInteger selectedDistanceFilter;
+@property (nonatomic, assign) NSInteger selectedSortFilter;
 
 -(void) initCategories;
 
@@ -31,9 +47,17 @@ static NSString * const kCellName = @"YPSwitchCell";
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     
     if(self) {
+        [self initPopularFilters];
+        [self initDistanceFilters];
+        [self initSortFilters];
         [self initCategories];
 
-        self.selectedCategories = [NSMutableSet set];
+        _selectedCategories = [NSMutableSet set];
+
+        _selectedDistanceFilter = -1;
+        _selectedSortFilter = -1;
+        
+        _sectionCells = @[kPriceCellName, kCategoryCellName, kPickerCellName, kPickerCellName, kCategoryCellName, kCategoryCellName];
     }
     
     return self;
@@ -50,18 +74,93 @@ static NSString * const kCellName = @"YPSwitchCell";
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
     
-    [self.tableView registerNib:[UINib nibWithNibName:kCellName bundle:nil] forCellReuseIdentifier:kCellName];
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    
+    for(NSString *cellname in self.sectionCells) {
+        [self.tableView registerNib:[UINib nibWithNibName:cellname bundle:nil] forCellReuseIdentifier:cellname];
+    }
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 6 ;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.categories.count;
+    switch (section) {
+        case 0: //price
+            return 1;
+        case 1: //most popular
+            return 4;
+        case 2: //distance
+            return 1;
+        case 3: //sort by
+            return 1;
+        case 4: //general features
+            return 3;
+        case 5: //category
+            return self.categories.count;
+        default:
+            return 1;
+    }
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    switch (section) {
+        case 0: //price
+            return @"Price";
+        case 1: //most popular
+            return @"Most Popular";
+        case 2: //distance
+            return @"Distance";
+        case 3: //sort by
+            return @"Sort by";
+        case 4: //general features
+            return @"General Features";
+        case 5: //category
+            return @"Categories";
+        default:
+            return @"";
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    YPSwitchCell *cell = [self.tableView dequeueReusableCellWithIdentifier:kCellName];
-    cell.delegate = self;
-    cell.on = [self.selectedCategories containsObject:self.categories[indexPath.row]];
-    cell.title = self.categories[indexPath.row][@"name"];
+    UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:self.sectionCells[indexPath.section]];
+    switch (indexPath.section) {
+        case 0: //price
+            break;
+        case 1: { //most popular
+            YPSwitchCell *ypSwitchCell = (YPSwitchCell *) cell;
+            ypSwitchCell.delegate = self;
+            //ypSwitchCell.on = [self.selectedCategories containsObject:self.popularFilters[indexPath.row]];
+            ypSwitchCell.title = self.popularFilters[indexPath.row][@"name"];
+            break;
+        }
+        case 2: {//distance
+            YPPicckerCell *pickerCell = (YPPicckerCell *) cell;
+            pickerCell.typeName = @"radius_filter";
+            pickerCell.pickerDataList = self.distanceFilters;
+            break;
+        }
+        case 3: {//sort by
+            YPPicckerCell *pickerCell = (YPPicckerCell *) cell;
+            pickerCell.typeName = @"sort";
+            pickerCell.pickerDataList = self.sortFilters;
+            break;
+        }
+        case 4: //general features
+            break;
+        case 5: { //category
+            YPSwitchCell *ypSwitchCell = (YPSwitchCell *) cell;
+            ypSwitchCell.delegate = self;
+            ypSwitchCell.on = [self.selectedCategories containsObject:self.categories[indexPath.row]];
+            ypSwitchCell.title = self.categories[indexPath.row][@"name"];
+            
+            return ypSwitchCell;
+        }
+        default:
+            return nil;
+    }
+    
     return cell;
 }
 
@@ -88,9 +187,14 @@ static NSString * const kCellName = @"YPSwitchCell";
     return filters;
 }
 
-#pragma mark - table view
-
-
+#pragma mark - picker delegate
+-(void) didSelected:(NSInteger) index forType:type {
+  if([type isEqualToString:kDistanceFilterName]) {
+      self.selectedDistanceFilter = index;
+  } else if([type isEqualToString:kSortFilterName]) {
+      self.selectedSortFilter = index;
+  }
+}
 
 /*
 #pragma mark - Navigation
@@ -111,6 +215,29 @@ static NSString * const kCellName = @"YPSwitchCell";
 -(void) onApplyButton {
     [self.delegate filterViewController:self didChangeFilters:self.fiters];
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+-(void) initPopularFilters {
+    _popularFilters = @[@{@"name" : @"Open Now", @"code": @"" },
+                        @{@"name" : @"Hot & New", @"code": @"" },
+                        @{@"name" : @"Offering a deal", @"code": @"deals_filter" },
+                        @{@"name" : @"Delivery", @"code": @"" }
+                        ];
+}
+
+-(void) initDistanceFilters {
+    _distanceFilters = @[@{@"name" : @"Auto", @"code": @"5" },
+                        @{@"name" : @"1 mile", @"code": @"1609" },
+                        @{@"name" : @"5 miles", @"code": @"8046" },
+                        @{@"name" : @"15 miles", @"code": @"24140" }
+                        ];
+}
+
+-(void) initSortFilters {
+    _sortFilters = @[@{@"name" : @"Best matched", @"code": @"0" },
+                         @{@"name" : @"Distance", @"code": @"1" },
+                         @{@"name" : @"Highest Rated", @"code": @"2" }
+                         ];
 }
 
 -(void) initCategories {
