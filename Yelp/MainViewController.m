@@ -132,7 +132,13 @@ double const METERS_PER_MILE= 1609.344;
 -(void) onFilterButton {
     FilterViewController *vc = [[FilterViewController alloc] init];
     vc.delegate = self;
-    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:vc];
+    UINavigationController *nvc = [[UINavigationController alloc] init];
+    nvc.navigationBar.translucent = YES;
+    nvc.navigationBar.barStyle = UIBarStyleBlack;
+    nvc.navigationBar.tintColor = [UIColor whiteColor];
+    nvc.navigationBar.backgroundColor = [UIColor redColor];
+    [nvc setViewControllers:@[vc]];
+    
     [self presentViewController:nvc animated:YES completion:nil];
 }
 

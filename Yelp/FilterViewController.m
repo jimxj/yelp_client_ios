@@ -28,6 +28,7 @@ static NSString * const kSortFilterName = @"sort";
 @property (nonatomic, strong) NSArray *popularFilters;
 @property (nonatomic, strong) NSArray *distanceFilters;
 @property (nonatomic, strong) NSArray *sortFilters;
+@property (nonatomic, strong) NSArray *generalFeatures;
 @property (nonatomic, strong) NSArray *categories;
 
 @property (nonatomic, strong) NSMutableSet *selectedCategories;
@@ -36,7 +37,10 @@ static NSString * const kSortFilterName = @"sort";
 
 @property (nonatomic, assign) NSInteger selectedDistanceFilter;
 @property (nonatomic, assign) NSInteger selectedSortFilter;
-@property (nonatomic, assign) BOOL isOfferingDealSelected;
+@property (nonatomic, strong) NSMutableSet *selectedPopularFilters;
+@property (nonatomic, strong) NSMutableSet *selectedGeneralFeatures;
+
+@property (nonatomic, strong) UIColor *defaultBackgroundColor;
 
 -(void) initCategories;
 
@@ -51,14 +55,19 @@ static NSString * const kSortFilterName = @"sort";
         [self initPopularFilters];
         [self initDistanceFilters];
         [self initSortFilters];
+        [self initGeneralFeatures];
         [self initCategories];
 
         _selectedCategories = [NSMutableSet set];
+        _selectedPopularFilters = [NSMutableSet set];
+        _selectedGeneralFeatures = [NSMutableSet set];
 
         _selectedDistanceFilter = 0;
         _selectedSortFilter = 0;
         
         _sectionCells = @[kPriceCellName, kCategoryCellName, kCategoryCellName, kCategoryCellName, kCategoryCellName, kCategoryCellName];
+
+        self.defaultBackgroundColor = [UIColor colorWithRed:247/255.0f green:247/255.0f blue:247/255.0f alpha:1.0f];
     }
     
     return self;
@@ -74,13 +83,22 @@ static NSString * const kSortFilterName = @"sort";
     
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
+
+    self.tableView.backgroundColor = self.defaultBackgroundColor;
     
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     
     for(NSString *cellname in self.sectionCells) {
         [self.tableView registerNib:[UINib nibWithNibName:cellname bundle:nil] forCellReuseIdentifier:cellname];
     }
+    
+    //[[UINavigationBar appearance]setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor redColor]}];
 }
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+}
+
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 6 ;
@@ -97,7 +115,7 @@ static NSString * const kSortFilterName = @"sort";
         case 3: //sort by
             return self.sortFilters.count;
         case 4: //general features
-            return 3;
+            return self.generalFeatures.count;
         case 5: //category
             return self.categories.count;
         default:
@@ -124,6 +142,18 @@ static NSString * const kSortFilterName = @"sort";
     }
 }
 
+//- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+//    UILabel *myLabel = [[UILabel alloc] init];
+//    myLabel.frame = CGRectMake(20, 8, 320, 20);
+//    myLabel.font = [UIFont boldSystemFontOfSize:14];
+//    myLabel.text = [self tableView:tableView titleForHeaderInSection:section];
+//
+//    UIView *headerView = [[UIView alloc] init];
+//    [headerView addSubview:myLabel];
+//
+//    return headerView;
+//}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:self.sectionCells[indexPath.section]];
     switch (indexPath.section) {
@@ -132,7 +162,7 @@ static NSString * const kSortFilterName = @"sort";
         case 1: { //most popular
             YPSwitchCell *ypSwitchCell = (YPSwitchCell *) cell;
             ypSwitchCell.delegate = self;
-            //ypSwitchCell.on = [self.selectedCategories containsObject:self.popularFilters[indexPath.row]];
+            ypSwitchCell.on = [self.selectedPopularFilters containsObject:self.popularFilters[indexPath.row]];
             ypSwitchCell.title = self.popularFilters[indexPath.row][@"name"];
             break;
         }
@@ -156,8 +186,13 @@ static NSString * const kSortFilterName = @"sort";
             ypSwitchCell.title = self.sortFilters[indexPath.row][@"name"];
             break;
         }
-        case 4: //general features
+        case 4: {//general features
+            YPSwitchCell *ypSwitchCell = (YPSwitchCell *) cell;
+            ypSwitchCell.delegate = self;
+            ypSwitchCell.on = [self.selectedGeneralFeatures containsObject:self.generalFeatures[indexPath.row]];
+            ypSwitchCell.title = self.generalFeatures[indexPath.row][@"name"];
             break;
+        }
         case 5: { //category
             YPSwitchCell *ypSwitchCell = (YPSwitchCell *) cell;
             ypSwitchCell.delegate = self;
@@ -179,8 +214,13 @@ static NSString * const kSortFilterName = @"sort";
         case 0: //price
             return;
         case 1: {//most popular
-            if(indexPath.row == 2) {
-                self.isOfferingDealSelected = value;
+//            if(indexPath.row == 2) {
+//                self.isOfferingDealSelected = value;
+//            }
+            if(value) {
+                [self.selectedPopularFilters addObject:self.popularFilters[indexPath.row]];
+            } else {
+                [self.selectedPopularFilters removeObject:self.popularFilters[indexPath.row]];
             }
             return ;
         }
@@ -191,16 +231,24 @@ static NSString * const kSortFilterName = @"sort";
             return;
         }
         case 3: {//sort by
-            NSIndexPath *previousIndexPath = [NSIndexPath indexPathForRow:self.selectedDistanceFilter inSection:indexPath.section];
+            NSIndexPath *previousIndexPath = [NSIndexPath indexPathForRow:self.selectedSortFilter inSection:indexPath.section];
             self.selectedSortFilter = indexPath.row;
             [self.tableView reloadRowsAtIndexPaths:@[previousIndexPath] withRowAnimation:UITableViewRowAnimationNone];
             return;
         }
-        case 4: //general features
-            return ;
+        case 4: {//general features
+            if (value) {
+                [self.selectedGeneralFeatures addObject:self.generalFeatures[indexPath.row]];
+            } else {
+                [self.selectedGeneralFeatures removeObject:self.generalFeatures[indexPath.row]];
+            }
+            return;
+        }
         case 5: { //category
             if (value) {
                 [self.selectedCategories addObject:self.categories[indexPath.row]];
+            } else {
+                [self.selectedCategories removeObject:self.categories[indexPath.row]];
             }
         }
         default:
@@ -220,12 +268,14 @@ static NSString * const kSortFilterName = @"sort";
         [filters setObject:categoryFilter forKey:@"category_filter"];
     }
     
-        if(self.isOfferingDealSelected) {
-            [filters setObject:@YES forKey:@"deals_filter"];
+    for(NSDictionary *filter in self.selectedPopularFilters) {
+        if(((NSString *)filter[@"code"]).length) {
+            [filters setObject:@YES forKey:filter[@"code"]];
         }
-        
-        [filters setObject:[NSNumber numberWithDouble:[self.distanceFilters[self.selectedDistanceFilter][@"code"] doubleValue]] forKey:@"radius_filter"];
-        [filters setObject:[NSNumber numberWithInt:[self.sortFilters[self.selectedSortFilter][@"code"] intValue]] forKey:@"sort"];
+    }
+
+    [filters setObject:[NSNumber numberWithDouble:[self.distanceFilters[self.selectedDistanceFilter][@"code"] doubleValue]] forKey:@"radius_filter"];
+    [filters setObject:[NSNumber numberWithInt:[self.sortFilters[self.selectedSortFilter][@"code"] intValue]] forKey:@"sort"];
 
     
     return filters;
@@ -283,6 +333,13 @@ static NSString * const kSortFilterName = @"sort";
                          @{@"name" : @"Distance", @"code": @"1" },
                          @{@"name" : @"Highest Rated", @"code": @"2" }
                          ];
+}
+
+-(void) initGeneralFeatures {
+    _generalFeatures = @[@{@"name" : @"Take-out", @"code": @"" },
+            @{@"name" : @"Good for Groups", @"code": @"" },
+            @{@"name" : @"Take Reservations", @"code": @"" }
+    ];
 }
 
 -(void) initCategories {
